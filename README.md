@@ -66,6 +66,8 @@ Update original URL of a short Code. Use a put statement with the following body
 
 ```
 PUT /shorten/HxOvELM20Y
+```
+```json
 {
   "url": "https://google.com"
 }
