@@ -76,6 +76,11 @@ public class ShortUrlController {
         Optional<ShortUrl> optional_short_url = urlRepository.findByShortCode(shortCode);
         if(optional_short_url.isPresent()) {
             ShortUrl new_short_url = optional_short_url.get();
+
+            new_short_url.setTimesUsed(new_short_url.getTimesUsed() + 1);
+
+            urlRepository.save(new_short_url);
+
             ObjectNode objectNode = objectMapper.createObjectNode();
             objectNode.put("id", new_short_url.getId());
             objectNode.put("url", new_short_url.getOriginalUrl());
@@ -124,5 +129,27 @@ public class ShortUrlController {
             return ResponseEntity.ok().body(objectNode);
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL could not be updated. Short Code does not exist.");
+    }
+
+    @GetMapping("/shorten/{shortCode}/stats")
+    public ResponseEntity<?> getUrlStats(@PathVariable String shortCode) {
+        Optional<ShortUrl> optional_short_url = urlRepository.findByShortCode(shortCode);
+        if(optional_short_url.isPresent()) {
+            ShortUrl shortUrl = optional_short_url.get();
+
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.put("id", shortUrl.getId());
+            objectNode.put("url", shortUrl.getOriginalUrl());
+            objectNode.put("shortCode", shortUrl.getShortCode());
+
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            objectNode.put("createdAt", shortUrl.getTimeCreated().format(dtf));
+            objectNode.put("updatedAt", shortUrl.getTimeChanged().format(dtf));
+
+            objectNode.put("accessCount", shortUrl.getTimesUsed());
+
+            return ResponseEntity.ok().body(objectNode);
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL not found. Short Code does not exist.");
     }
 }
