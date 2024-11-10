@@ -4,13 +4,16 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
@@ -43,15 +46,15 @@ public class ShortUrlController {
 
     @PostMapping("/shorten")
     @ResponseStatus( HttpStatus.OK )
-    public ObjectNode shortenUrl(@RequestBody URLShortenRequest longUrl) {
-        String short_code = shortCodeGenerator.generateUniqueCode(longUrl.getLongUrl());
+    public ObjectNode shortenUrl(@RequestBody URLShortenRequest url) {
+        String short_code = shortCodeGenerator.generateUniqueCode(url.getUrl());
         Optional<ShortUrl> short_url = urlRepository.findByShortCode(short_code);
 
         if(short_url.isPresent()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "URL could not be shortened. Try again at a later time.");
         }
 
-        ShortUrl new_short_url = new ShortUrl(longUrl.getLongUrl(), short_code, LocalDateTime.now(), LocalDateTime.now(), 0);
+        ShortUrl new_short_url = new ShortUrl(url.getUrl(), short_code, LocalDateTime.now(), LocalDateTime.now(), 0);
 
         urlRepository.save(new_short_url);
 
@@ -97,5 +100,29 @@ public class ShortUrlController {
             return;
         }
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL could not be deleted. Short Code does not exist.");
+    }
+
+    @PutMapping("/shorten/{shortCode}")
+    @ResponseStatus( HttpStatus.BAD_REQUEST )
+    public ResponseEntity<?> updateUrl(@PathVariable String shortCode, @RequestBody URLShortenRequest url) {
+        Optional<ShortUrl> optional_short_url = urlRepository.findByShortCode(shortCode);
+        if(optional_short_url.isPresent()) {
+            ShortUrl shortUrl = optional_short_url.get();
+            shortUrl.setOriginalUrl(url.getUrl());
+            shortUrl.setTimeChanged(LocalDateTime.now());
+            urlRepository.save(shortUrl);
+
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.put("id", shortUrl.getId());
+            objectNode.put("url", shortUrl.getOriginalUrl());
+            objectNode.put("shortCode", shortUrl.getShortCode());
+
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            objectNode.put("createdAt", shortUrl.getTimeCreated().format(dtf));
+            objectNode.put("updatedAt", shortUrl.getTimeChanged().format(dtf));
+
+            return ResponseEntity.ok().body(objectNode);
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL could not be updated. Short Code does not exist.");
     }
 }

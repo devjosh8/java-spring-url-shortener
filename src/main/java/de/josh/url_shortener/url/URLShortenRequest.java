@@ -4,20 +4,20 @@ import jakarta.persistence.Entity;
 
 public class URLShortenRequest {
     
-    private String longUrl;
+    private String url;
 
     public URLShortenRequest(String longUrl) {
-        this.longUrl = longUrl;
+        this.url = longUrl;
     }
 
     public URLShortenRequest() {}
 
-    public String getLongUrl() {
-        return longUrl;
+    public String getUrl() {
+        return url;
     }
 
-    public void setLongUrl(String longUrl) {
-        this.longUrl = longUrl;
+    public void setUrl(String longUrl) {
+        this.url = longUrl;
     }
     
     @Override
