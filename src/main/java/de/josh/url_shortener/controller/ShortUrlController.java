@@ -88,9 +88,14 @@ public class ShortUrlController {
         throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL could not be fetched. Short Code does not exist.");
     }
 
-    @GetMapping("/shorten/{shortCode}")
+    @DeleteMapping("/shorten/{shortCode}")
     @ResponseStatus( HttpStatus.NO_CONTENT )
     public void deleteUrl(@PathVariable String shortCode) {
-
+        Optional<ShortUrl> optional_short_url = urlRepository.findByShortCode(shortCode);
+        if(optional_short_url.isPresent()) {
+            urlRepository.deleteById(optional_short_url.get().getId());
+            return;
+        }
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL could not be deleted. Short Code does not exist.");
     }
 }
