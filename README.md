@@ -18,7 +18,7 @@ Make sure you are hosting a POSTGRESQL database and input the corresponding data
 
 Create a new shortened URL using the post method. Pass in your url as as the `url` argument.
 
-```
+```json
 POST /shorten
 {
    "url": "YOUR_URL_TO_SHORTEN_HERE.com"
@@ -27,7 +27,7 @@ POST /shorten
 
 The returned body will look something like this:
 
-```
+```json
 {
     "id": 1,
     "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -48,7 +48,7 @@ GET /shorten/HxOvELM20Y
 
 which will return the following body:
 
-```
+```json
 {
     "id": 1,
     "url": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
@@ -72,7 +72,7 @@ The short code `HxOvELM20Y` will now redirect to `https://google.com`.
 
 The returned body will be the updated status:
 
-```
+```json
 {
     "id": 1,
     "url": "https://google.com",
@@ -102,7 +102,7 @@ GET /shorten/HxOvELM20Y/stats
 
 this will return a body which will look something like this:
 
-```
+```json
 {
   "id": "1",
   "url": "https://google.com",
