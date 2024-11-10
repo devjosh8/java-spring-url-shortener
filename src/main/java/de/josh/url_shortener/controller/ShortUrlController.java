@@ -7,10 +7,12 @@ import java.util.Optional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.HttpStatusCode;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.client.HttpStatusCodeException;
@@ -39,18 +41,8 @@ public class ShortUrlController {
         shortCodeGenerator = new ShortCodeGenerator();
     }
 
-    @GetMapping("/hello")
-    public String hello() {
-        return "Hallo!";
-    }
-
-    @GetMapping("/test_add")
-    public String test_add() {
-        urlRepository.save(new ShortUrl("https://www.youtube.com/watch?v=mj2_GU1a7Qs&t=53s", "beet3", LocalDateTime.now(), LocalDateTime.now(), 0));
-        return "erfolgreich hinzugefügt";
-    }
-
     @PostMapping("/shorten")
+    @ResponseStatus( HttpStatus.OK )
     public ObjectNode shortenUrl(@RequestBody URLShortenRequest longUrl) {
         String short_code = shortCodeGenerator.generateUniqueCode(longUrl.getLongUrl());
         Optional<ShortUrl> short_url = urlRepository.findByShortCode(short_code);
@@ -75,12 +67,30 @@ public class ShortUrlController {
         return objectNode;
     }
 
-    @GetMapping("/get/{shortCode}")
-    public String get(@PathVariable String shortCode) {
-        Optional<ShortUrl> sh = urlRepository.findByShortCode(shortCode);
-        if(sh.isPresent()) {
-            return sh.get().getOriginalUrl();
+    @GetMapping("/shorten/{shortCode}")
+    @ResponseStatus( HttpStatus.OK )
+    public ObjectNode getUrlFromShortCode(@PathVariable String shortCode) {
+        Optional<ShortUrl> optional_short_url = urlRepository.findByShortCode(shortCode);
+        if(optional_short_url.isPresent()) {
+            ShortUrl new_short_url = optional_short_url.get();
+            ObjectNode objectNode = objectMapper.createObjectNode();
+            objectNode.put("id", new_short_url.getId());
+            objectNode.put("url", new_short_url.getOriginalUrl());
+            objectNode.put("shortCode", new_short_url.getShortCode());
+
+            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+            objectNode.put("createdAt", new_short_url.getTimeCreated().format(dtf));
+            objectNode.put("updatedAt", new_short_url.getTimeChanged().format(dtf));
+
+
+            return objectNode;
         }
-        return "URL konnte nicht gefunden werden!";
+        throw new ResponseStatusException(HttpStatus.NOT_FOUND, "URL could not be fetched. Short Code does not exist.");
+    }
+
+    @GetMapping("/shorten/{shortCode}")
+    @ResponseStatus( HttpStatus.NO_CONTENT )
+    public void deleteUrl(@PathVariable String shortCode) {
+
     }
 }
