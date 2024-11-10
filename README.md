@@ -8,6 +8,10 @@ This project was created for the **URL-Shortening-Service** Project by https://r
 
 https://roadmap.sh/projects/url-shortening-service
 
+## Before using
+
+Make sure you are hosting a POSTGRESQL database and input the corresponding database, password and username into the `application.properties` file in `src/main/resources`.
+
 ## Usage
 
 ### Create shortened URL
