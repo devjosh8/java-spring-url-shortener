@@ -18,8 +18,10 @@ Make sure you are hosting a POSTGRESQL database and input the corresponding data
 
 Create a new shortened URL using the post method. Pass in your url as as the `url` argument.
 
-```json
+```
 POST /shorten
+```
+```json
 {
    "url": "YOUR_URL_TO_SHORTEN_HERE.com"
 }
