@@ -1,31 +1,48 @@
 package de.josh.url_shortener.gen;
 
-import java.time.Instant;
+
+import java.nio.charset.StandardCharsets;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 public class ShortCodeGenerator {
     
 
+    private MessageDigest messageDigest;
+
     private final String BASE62 = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
 
-    private String convertUrlToShortCode(long id) {
-
-        long time = Instant.now().getEpochSecond() & 0xFFFFFFFF;
-
-        long combined = time ^ id;
-
-        String base62 = encodeBase62(combined);
-
-        return base62.substring(0, Math.min(10, base62.length()));
+    public ShortCodeGenerator() {
+        try {
+            messageDigest = MessageDigest.getInstance("SHA-256");
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
     }
 
+    public String generateUniqueCode(String url) {
+        // Zeitstempel und URL kombinieren
+        long timestamp = System.currentTimeMillis();
+        String input = url + timestamp;
 
-    private String encodeBase62(long num) {
-        StringBuilder b = new StringBuilder();
-        while(num > 0) {
-            int rest = (int) (num % 62);
-            b.append(BASE62.charAt(rest));
-            num /= 62;
+        // SHA-256-Hash der kombinierten Zeichenkette berechnen
+        byte[] hash = hash(input);
+
+        // Hash in Base62 umwandeln und auf 10 Zeichen kürzen
+        return toBase62(hash).substring(0, 10);
+    }
+
+    private byte[] hash(String input) {
+        return messageDigest.digest(input.getBytes(StandardCharsets.UTF_8));
+    }
+
+    private String toBase62(byte[] hash) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : hash) {
+            int index = b & 0xFF; // Byte zu positivem int konvertieren
+            sb.append(BASE62.charAt(index % BASE62.length()));
         }
-        return b.reverse().toString();
+        return sb.toString();
     }
 }

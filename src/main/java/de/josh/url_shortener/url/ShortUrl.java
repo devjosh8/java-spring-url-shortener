@@ -49,14 +49,7 @@ public class ShortUrl {
         this.timesUsed = timesUsed;
     }
 
-    public ShortUrl(String originalUrl, LocalDateTime timeCreated, LocalDateTime timeChanged,
-            int timesUsed) {
-        this.originalUrl = originalUrl;
-        this.shortCode = shortCode;
-        this.timeCreated = timeCreated;
-        this.timeChanged = timeChanged;
-        this.timesUsed = timesUsed;
-    }
+
 
     public ShortUrl() {
     }
@@ -65,6 +58,10 @@ public class ShortUrl {
         return originalUrl;
     }
 
+    public Long getId() {
+        return id;
+    }
+    
     public void setOriginalUrl(String originalUrl) {
         this.originalUrl = originalUrl;
     }
